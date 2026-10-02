@@ -52,9 +52,9 @@ Requires JDK 17 and Android SDK platform 34 + build-tools 34.0.0:
 ./build.sh   # produces RotationControl.apk
 ```
 
-`build.sh` expects the SDK at `~/workspace/android-tools/sdk` and JDK at
-`~/workspace/android-tools/jdk-17.0.20.1+1` — adjust the paths at the top
-of the script for your machine. On first run it generates a self-signed
+`build.sh` locates the JDK via `JAVA_HOME` (falling back to Homebrew's
+`openjdk@17`) and the SDK via `ANDROID_SDK_ROOT` / `ANDROID_HOME`
+(falling back to `~/Library/Android/sdk`). On first run it generates a self-signed
 `keystore.jks` (password `rotationcontrol`, alias `rotation`) — that file
 is gitignored and must stay put so future builds install over the first
 one.

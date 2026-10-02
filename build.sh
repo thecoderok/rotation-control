@@ -3,11 +3,34 @@
 set -e
 cd "$(dirname "$0")"
 
-export JAVA_HOME=~/workspace/android-tools/jdk-17.0.20.1+1
-export PATH=$JAVA_HOME/bin:$PATH
-SDK=~/workspace/android-tools/sdk
+# Resolve JDK: prefer JAVA_HOME if valid, else Homebrew openjdk@17.
+if [ -z "$JAVA_HOME" ] || [ ! -x "$JAVA_HOME/bin/javac" ]; then
+    for candidate in /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home \
+                     /usr/local/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home; do
+        if [ -x "$candidate/bin/javac" ]; then JAVA_HOME="$candidate"; break; fi
+    done
+fi
+if [ ! -x "$JAVA_HOME/bin/javac" ]; then
+    echo "error: JDK 17 not found. Install it ('brew install openjdk@17') or set JAVA_HOME." >&2
+    exit 1
+fi
+export JAVA_HOME
+export PATH="$JAVA_HOME/bin:$PATH"
+
+# Resolve SDK: ANDROID_SDK_ROOT > ANDROID_HOME > ~/Library/Android/sdk > legacy path.
+SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+if [ -z "$SDK" ]; then
+    for candidate in "$HOME/Library/Android/sdk" "$HOME/workspace/android-tools/sdk"; do
+        if [ -d "$candidate" ]; then SDK="$candidate"; break; fi
+    done
+fi
 BT=$SDK/build-tools/34.0.0
 ANDROID_JAR=$SDK/platforms/android-34/android.jar
+if [ ! -x "$BT/aapt2" ] || [ ! -f "$ANDROID_JAR" ]; then
+    echo "error: Android SDK with build-tools 34.0.0 and platform android-34 not found (SDK dir: ${SDK:-<none>})." >&2
+    echo "Install with: sdkmanager --install 'platform-tools' 'platforms;android-34' 'build-tools;34.0.0'" >&2
+    exit 1
+fi
 
 rm -rf build && mkdir -p build/compiled build/classes build/dex
 
