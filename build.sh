@@ -20,7 +20,7 @@ export PATH="$JAVA_HOME/bin:$PATH"
 # Resolve SDK: ANDROID_SDK_ROOT > ANDROID_HOME > ~/Library/Android/sdk > legacy path.
 SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
 if [ -z "$SDK" ]; then
-    for candidate in "$HOME/Library/Android/sdk" "$HOME/workspace/android-tools/sdk"; do
+    for candidate in "$HOME/Library/Android/sdk" "$HOME/Android/Sdk" "$HOME/AppData/Local/Android/Sdk" "$HOME/workspace/android-tools/sdk"; do
         if [ -d "$candidate" ]; then SDK="$candidate"; break; fi
     done
 fi

@@ -46,15 +46,77 @@ Accessibility/usage-stats permissions.
 ## Build
 
 Gradle-free manual build (aapt2 → javac → d8 → zipalign → apksigner).
-Requires JDK 17 and Android SDK platform 34 + build-tools 34.0.0:
+
+### Prerequisites
+
+You need JDK 17, the Android SDK (platform 34 + build-tools 34.0.0),
+and the `zip` command. `build.sh` locates the JDK via `JAVA_HOME`
+(macOS: falls back to Homebrew's `openjdk@17`) and the SDK via
+`ANDROID_SDK_ROOT` / `ANDROID_HOME` (falling back to the standard
+per-OS location below).
+
+**macOS** (Homebrew):
+
+```bash
+brew install openjdk@17
+brew install --cask android-commandlinetools
+echo 'export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"' >> ~/.zshrc
+echo 'export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"' >> ~/.zshrc
+source ~/.zshrc
+sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+```
+
+Run `sdkmanager` only after the new variables are exported — otherwise
+it installs the packages into its own directory instead of the SDK root.
+
+**Linux** (Debian/Ubuntu; adapt the package manager for other distros):
+
+```bash
+sudo apt install openjdk-17-jdk zip unzip
+```
+
+Download "Command line tools only" for Linux from
+<https://developer.android.com/studio> and unpack it so that
+`sdkmanager` ends up at
+`~/Android/Sdk/cmdline-tools/latest/bin/sdkmanager`
+(the `latest` level is required). Then:
+
+```bash
+echo 'export ANDROID_SDK_ROOT="$HOME/Android/Sdk"' >> ~/.bashrc
+echo 'export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin"' >> ~/.bashrc
+source ~/.bashrc
+sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+```
+
+**Windows** (run the build itself from Git Bash):
+
+1. Install JDK 17, e.g. `winget install EclipseAdoptium.Temurin.17.JDK`,
+   and make sure `java` is on `PATH`.
+2. Download "Command line tools only" for Windows from
+   <https://developer.android.com/studio> and unpack it so that
+   `sdkmanager` ends up at
+   `%LOCALAPPDATA%\Android\Sdk\cmdline-tools\latest\bin\sdkmanager`
+   (the `latest` level is required).
+3. In Git Bash:
+
+```bash
+export ANDROID_SDK_ROOT="$HOME/AppData/Local/Android/Sdk"
+export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin"
+sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+```
+
+Add the `export` lines to `~/.bashrc` to persist them.
+
+Answer `y` to the license prompts during the install (or run
+`sdkmanager --licenses` afterwards).
+
+### Building
 
 ```bash
 ./build.sh   # produces RotationControl.apk
 ```
 
-`build.sh` locates the JDK via `JAVA_HOME` (falling back to Homebrew's
-`openjdk@17`) and the SDK via `ANDROID_SDK_ROOT` / `ANDROID_HOME`
-(falling back to `~/Library/Android/sdk`). On first run it generates a self-signed
+On first run it generates a self-signed
 `keystore.jks` (password `rotationcontrol`, alias `rotation`) — that file
 is gitignored and must stay put so future builds install over the first
 one.
